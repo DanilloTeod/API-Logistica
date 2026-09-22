@@ -48,9 +48,3 @@ O sistema está sendo construído em fases incrementais. Os próximos passos tra
 * **Infraestrutura:** Docker
 
 ---
-
-## ⚙️ Como rodar o projeto localmente (Versão Atual)
-
-1. Clone este repositório:
-   ```bash
-   git clone [https://github.com/seu-usuario/sistema-logistica.git](https://github.com/seu-usuario/sistema-logistica.git)

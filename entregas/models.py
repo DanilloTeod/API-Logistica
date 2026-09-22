@@ -17,10 +17,11 @@ class Motorista(models.Model):
 
     # Textfield é usado para textos longos, sem limite como o charfield (max_length)
     endereco = models.TextField()
-    data_de_nascimento = models.CharField(max_length=256)
+    data_nascimento = models.DateField(null=True, blank=True)
     ativo = models.BooleanField(default=True)
 
     def __str__(self): # Função que define o que vai aparecer escrito no painel adm
+        data_formatada = self.data_nascimento.strftime('%d/%m/%Y') if self.data_nascimento else "Não informada"
         return f"{self.nome}"
 
 class Caminhao(models.Model):
