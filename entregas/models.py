@@ -58,10 +58,9 @@ class Pacote(models.Model):
     codigo_rastreio = models.CharField(max_length=50, unique=True)
     destino = models.TextField()
     cliente = models.CharField(max_length=150, verbose_name="Destinatario", null=True)
-    motorista = models.ForeignKey(Motorista, on_delete=models.PROTECT, verbose_name="Motorista Responsável" \
-    "" 
-    "" \
-    "") 
+    motorista = models.ForeignKey(Motorista, on_delete=models.PROTECT, verbose_name="Motorista Responsável") 
+    telefone = models.CharField(max_length=14, null=True)
+
     # on_delete=models.PROTECT
     # Caso o motorista seja deletado do db por algum motivo
     # Esse atributo proibe essa ação, pois há um produto atrelado ao motorista

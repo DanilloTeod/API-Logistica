@@ -21,5 +21,6 @@ from django.conf.urls import include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('entregas.urls'))
+    path('api/', include('entregas.urls')), # inclui todos os paths que eu passar no arquivo 
+                                            # urls.py em entregas
 ]
