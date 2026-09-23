@@ -119,7 +119,8 @@ def pacote_list(request):
                 cliente = validated_data["cliente"],
                 motorista = Motorista.objects.get(nome=(validated_data["motorista"])),
                 status = validated_data["status"],
-                destino = validated_data["destino"]
+                destino = validated_data["destino"],
+                telefone = validated_data["telefone"]
             )
             #Motorista.objects.get() pegar o id a partir do nome do objeto
             return JsonResponse(serializer.data, status=201)

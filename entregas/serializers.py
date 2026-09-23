@@ -22,3 +22,5 @@ class PacoteSerializers(serializers.Serializer):
     cliente = serializers.CharField(max_length=150)
     motorista = serializers.CharField(max_length=150)
     status = serializers.CharField(max_length=15)
+    telefone = serializers.CharField(max_length=14)
+
