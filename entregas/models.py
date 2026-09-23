@@ -14,7 +14,7 @@ class Motorista(models.Model):
     nome = models.CharField(max_length=150, verbose_name="Nome")
     cpf = models.CharField(max_length=14, unique=True, verbose_name="CPF")
     cnh = models.CharField(max_length=20, unique=True, verbose_name="CNH")
-
+    telefone = models.CharField(max_length=14, null=True)
     # Textfield é usado para textos longos, sem limite como o charfield (max_length)
     endereco = models.TextField()
     data_nascimento = models.DateField(null=True, blank=True)
@@ -22,7 +22,7 @@ class Motorista(models.Model):
 
     def __str__(self): # Função que define o que vai aparecer escrito no painel adm
         data_formatada = self.data_nascimento.strftime('%d/%m/%Y') if self.data_nascimento else "Não informada"
-        return f"{self.nome}"
+        return f"{self.nome} id: {self.id}"
 
 class Caminhao(models.Model):
     placa = models.CharField(max_length=8, unique=True, verbose_name="Placa do Veículo") 
@@ -57,14 +57,15 @@ class Pacote(models.Model):
     # Textfield é usado para textos longos, sem limite como o charfield (max_length)
     codigo_rastreio = models.CharField(max_length=50, unique=True)
     destino = models.TextField()
+    cliente = models.CharField(max_length=150, verbose_name="Destinatario", null=True)
     motorista = models.ForeignKey(Motorista, on_delete=models.PROTECT, verbose_name="Motorista Responsável" \
-    "" \
+    "" 
     "" \
     "") 
     # on_delete=models.PROTECT
     # Caso o motorista seja deletado do db por algum motivo
     # Esse atributo proibe essa ação, pois há um produto atrelado ao motorista
-    status = models.CharField(max_length=1,choices=status_code, blank=True, default='P')
+    status = models.CharField(max_length=1, choices=status_code, blank=True, default='P')
     # choices= , gera uma lista com a tupla status_code
 
     def __str__(self): # Função que define o que vai aparecer escrito no painel adm
