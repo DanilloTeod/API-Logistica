@@ -22,7 +22,7 @@ class Motorista(models.Model):
 
     def __str__(self): # Função que define o que vai aparecer escrito no painel adm
         data_formatada = self.data_nascimento.strftime('%d/%m/%Y') if self.data_nascimento else "Não informada"
-        return f"{self.nome} id: {self.id}"
+        return f"{self.nome}"
 
 class Caminhao(models.Model):
     placa = models.CharField(max_length=8, unique=True, verbose_name="Placa do Veículo") 
@@ -59,7 +59,7 @@ class Pacote(models.Model):
     destino = models.TextField()
     cliente = models.CharField(max_length=150, verbose_name="Destinatario", null=True)
     motorista = models.ForeignKey(Motorista, on_delete=models.PROTECT, verbose_name="Motorista Responsável") 
-    telefone = models.CharField(max_length=14, null=True)
+    telefone = models.CharField(max_length=14, null=True, verbose_name="Telefone do Cliente")
 
     # on_delete=models.PROTECT
     # Caso o motorista seja deletado do db por algum motivo
