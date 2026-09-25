@@ -46,7 +46,7 @@ def motoristas_list(request):
             return JsonResponse(serializer.data, status=201) # 201 = created
         return JsonResponse(serializer.errors, status=400)
 
-@api_view(http_method_names=["GET", "PUT"]) # PUT -> editar
+@api_view(http_method_names=["GET", "PATCH"]) # PUT -> editar, PATCH -> editar parcial (mais util)
 def motoristas_detail(request, id):
     if(request.method == "GET"):
         obj = get_object_or_404(Motorista, id=id)
@@ -61,7 +61,7 @@ def motoristas_detail(request, id):
         # JsonResponse -> HEADER
         return JsonResponse(serializer.data)
 
-    if(request.method == "PUT"): # substituindo uma entidade
+    if(request.method == "PATCH"): # substituindo uma entidade
         obj = get_object_or_404(Motorista, id=id) # busca o objeto no banco
         # quero alterar os valores/atributos que vieram no request
         
@@ -121,14 +121,14 @@ def caminhao_list(request):
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
 
-@api_view(http_method_names=["GET", "PUT"])
+@api_view(http_method_names=["GET", "PATCH"])
 def caminhao_detail(request, id):
     if(request.method == "GET"):
         obj = get_object_or_404(Caminhao, id=id)
         serializer = CaminhaoSerializers(obj)
         return JsonResponse(serializer.data)
 
-    if(request.method == "PUT"):
+    if(request.method == "PATCH"):
         obj = get_object_or_404(Caminhao, id=id)
 
         data = request.data # pega os dados da request PUT
@@ -182,41 +182,43 @@ def pacote_list(request):
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
 
-@api_view(http_method_names=["GET", "PUT"])
+@api_view(http_method_names=["GET", "PATCH"])
 def pacote_detail(request, codigo_rastreio):
     if(request.method == "GET"):
         pacotes = get_object_or_404(Pacote, codigo_rastreio=codigo_rastreio)
         serializer = PacoteSerializers(pacotes)
         return JsonResponse(serializer.data)
 
-    if(request.method == "PUT"):
+    if(request.method == "PATCH"):
         obj = get_object_or_404(Pacote, codigo_rastreio=codigo_rastreio) 
         # busca o objeto pelo codigo de rastreio no db
         data = request.data # pega os dados da request PUT
 
         # Validação
-        serializer = PacoteSerializers(data=data) # serializando o objeto, dados que vieram da request
-
+        # Quando troca put por patch, deve-se informar ao serializer
+        # qual o objeto esta sendo alterado
+        serializer = PacoteSerializers(instance=obj, data=data, partial=True) # serializando o objeto, dados que vieram da request
+        # partial=True, permite updates parciais, para esta instancia de serializers
         if(serializer.is_valid()):
             validated_data = serializer.validated_data
-
             motorista_nome = request.data.get("motorista")
             if motorista_nome:
                 # Busca ou cria o motorista
                 motorista_obj, created = Motorista.objects.get_or_create(nome=motorista_nome)
-                obj.motorista = motorista_obj  # Agora repassa a INSTÂNCIA, não a string!
+                obj.motorista.set([motorista_obj])  # Agora repassa a INSTÂNCIA, não a string!
 
-                # Substituindo os demais campos simples
-                obj.codigo_rastreio = validated_data.get("codigo_rastreio", obj.codigo_rastreio)
-                obj.destino = validated_data.get("destino", obj.destino)
-                obj.cliente = validated_data.get("cliente", obj.cliente)
-                obj.status = validated_data.get("status", obj.status)
-                obj.telefone = validated_data.get("telefone", obj.telefone)
+            else: # O campo motorista não foi enviado no patch
+                pass
 
-                obj.save()
-
-                # CORREÇÃO 3: Reserializa a instância atualizada do banco
-                return JsonResponse(PacoteSerializers(obj).data, status=200)
+                # Substituindo campos simples
+            obj.codigo_rastreio = validated_data.get("codigo_rastreio", obj.codigo_rastreio)
+            obj.destino = validated_data.get("destino", obj.destino)
+            obj.cliente = validated_data.get("cliente", obj.cliente)
+            obj.status = validated_data.get("status", obj.status)
+            obj.telefone = validated_data.get("telefone", obj.telefone)
+            obj.save()
+            obj_saved = PacoteSerializers(obj)
+            return JsonResponse(obj_saved.data, status=200)
             """
             # Substituindo a entidade no db
             obj.codigo_rastreio = validated_data.get("codigo_rastreio", obj.codigo_rastreio)

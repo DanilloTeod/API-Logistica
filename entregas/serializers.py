@@ -16,6 +16,7 @@ class CaminhaoSerializers(serializers.Serializer):
         modelo = serializers.CharField(max_length=100)
         motorista = serializers.SlugRelatedField(many=True, read_only=True, slug_field='nome')
 
+
 class PacoteSerializers(serializers.Serializer):
     codigo_rastreio = serializers.CharField(max_length=50)
     destino = serializers.CharField(max_length=150)
@@ -23,4 +24,5 @@ class PacoteSerializers(serializers.Serializer):
     motorista = serializers.CharField(max_length=150)
     status = serializers.CharField(max_length=15)
     telefone = serializers.CharField(max_length=14)
+
 
