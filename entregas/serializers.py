@@ -7,7 +7,7 @@ class MotoristaSerializers(serializers.Serializer):
     telefone = serializers.CharField(max_length=14)
     endereco = serializers.CharField(max_length=100)
     ativo = serializers.BooleanField()
-    data_nascimento = fields.DateField(input_formats=['%d/%m/%Y'])
+    data_nascimento = fields.DateField(input_formats=['%Y-%m-%d'])
 
 class CaminhaoSerializers(serializers.Serializer):
         placa = serializers.CharField(max_length=8) 

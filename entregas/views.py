@@ -67,7 +67,7 @@ def motoristas_detail(request, id):
         
         # Validação
         data = request.data
-        serializer = MotoristaSerializers(data=data)
+        serializer = MotoristaSerializers(instance=obj ,data=data, partial=True)
 
         if(serializer.is_valid()):
             validated_data = serializer.validated_data
@@ -134,26 +134,29 @@ def caminhao_detail(request, id):
         data = request.data # pega os dados da request PUT
         
         # Validação
-        serializer = CaminhaoSerializers(data=data)
+        serializer = CaminhaoSerializers(instance=obj, data=data, partial=True)
 
         if(serializer.is_valid()):
             validated_data = serializer.validated_data
-            nome_motorista = request.data.get("motorista")
+            motorista_nome = request.data.get("motorista")
             # .create() não aceita um campo many to many
             # Retirar o nome do motorista do validated_data
-            validated_data.pop("motorista", None)
-        
+            #validated_data.pop("motorista", None)
+
+            if motorista_nome:
             # Substituir a entidade
+                motorista_obj, created = Motorista.objects.get_or_create(nome=motorista_nome)
+                obj.motorista.set([motorista_obj])
+            else: # O campo motorista não foi enviado no patch
+                pass
+
             obj.placa = validated_data.get("placa", obj.placa)
             obj.modelo = validated_data.get("modelo", obj.modelo)
-            # Busca o motorista no banco de dados usando o nome
-            motorista_obj, created = Motorista.objects.get_or_create(nome=nome_motorista)
-            obj.motorista.set([motorista_obj])
+
             obj.save()
-
-            return JsonResponse(CaminhaoSerializers(obj).data, status=200) 
+            obj_saved = CaminhaoSerializers(obj)
+            return JsonResponse(obj_saved.data, status=200) 
             # 200, atualizando, serializo novamente porque apaguei validated_data.pop("motorista", None)
-
         return JsonResponse(serializer.errors, status=400)
     
 @api_view(http_method_names=["GET", "POST"]) # APIView
@@ -219,16 +222,4 @@ def pacote_detail(request, codigo_rastreio):
             obj.save()
             obj_saved = PacoteSerializers(obj)
             return JsonResponse(obj_saved.data, status=200)
-            """
-            # Substituindo a entidade no db
-            obj.codigo_rastreio = validated_data.get("codigo_rastreio", obj.codigo_rastreio)
-            obj.destino = validated_data.get("destino", obj.destino)
-            obj.cliente = validated_data.get("cliente", obj.cliente)
-            obj.motorista = validated_data.get("motorista", obj.motorista)
-            obj.status = validated_data.get("status", obj.status)
-            obj.telefone = validated_data.get("telefone", obj.telefone)
-
-            obj.save()
-            return JsonResponse(serializer.data, status=200)
-        """
         return JsonResponse(serializer.errors, status=400)
