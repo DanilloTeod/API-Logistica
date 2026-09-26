@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.db.models import ProtectedError
 
 from entregas.models import Motorista, Caminhao, Pacote
 from entregas.serializers import MotoristaSerializers, CaminhaoSerializers, PacoteSerializers
@@ -46,7 +47,7 @@ def motoristas_list(request):
             return JsonResponse(serializer.data, status=201) # 201 = created
         return JsonResponse(serializer.errors, status=400)
 
-@api_view(http_method_names=["GET", "PATCH"]) # PUT -> editar, PATCH -> editar parcial (mais util)
+@api_view(http_method_names=["GET", "PATCH", "DELETE"]) # PUT -> editar, PATCH -> editar parcial (mais util)
 def motoristas_detail(request, id):
     if(request.method == "GET"):
         obj = get_object_or_404(Motorista, id=id)
@@ -86,6 +87,13 @@ def motoristas_detail(request, id):
             obj.save()
             return JsonResponse(serializer.data, status=200) # 200, atualizando
         return JsonResponse(serializer.errors, status=400) # bad request
+    if (request.method == "DELETE"):
+        obj = get_object_or_404(Motorista, id=id) # busca o objeto no banco
+        try:
+            obj.delete()
+            return Response(status=204) # 204 = no content, resposta sem corpo 
+        except ProtectedError:
+            return JsonResponse({"erro": "Não é possível excluir este motorista pois ele está vinculado a registros ativos."}, status=400)
         
 @api_view(http_method_names=["GET", "POST"])
 def caminhao_list(request):
@@ -121,7 +129,7 @@ def caminhao_list(request):
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
 
-@api_view(http_method_names=["GET", "PATCH"])
+@api_view(http_method_names=["GET", "PATCH", "DELETE"])
 def caminhao_detail(request, id):
     if(request.method == "GET"):
         obj = get_object_or_404(Caminhao, id=id)
@@ -158,6 +166,15 @@ def caminhao_detail(request, id):
             return JsonResponse(obj_saved.data, status=200) 
             # 200, atualizando, serializo novamente porque apaguei validated_data.pop("motorista", None)
         return JsonResponse(serializer.errors, status=400)
+
+    if(request.method == "DELETE"):
+        obj = get_object_or_404(Caminhao, id=id)
+        try:
+            obj.delete()
+            return Response(status=204) # 204 = no content, resposta sem corpo
+        
+        except ProtectedError:
+            return JsonResponse({"erro": "Não é possível excluir este motorista pois ele está vinculado a registros ativos."}, status=400)    
     
 @api_view(http_method_names=["GET", "POST"]) # APIView
 def pacote_list(request):
@@ -185,7 +202,7 @@ def pacote_list(request):
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
 
-@api_view(http_method_names=["GET", "PATCH"])
+@api_view(http_method_names=["GET", "PATCH", "DELETE"])
 def pacote_detail(request, codigo_rastreio):
     if(request.method == "GET"):
         pacotes = get_object_or_404(Pacote, codigo_rastreio=codigo_rastreio)
@@ -223,3 +240,11 @@ def pacote_detail(request, codigo_rastreio):
             obj_saved = PacoteSerializers(obj)
             return JsonResponse(obj_saved.data, status=200)
         return JsonResponse(serializer.errors, status=400)
+    if(request.method == "DELETE"):
+        obj = get_object_or_404(Pacote, codigo_rastreio=codigo_rastreio)
+
+        try:
+            obj.delete()
+            return Response(status=204)
+        except ProtectedError:
+            return JsonResponse({"erro": "Não é possível excluir este motorista pois ele está vinculado a registros ativos."}, status=400)    
