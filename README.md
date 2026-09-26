@@ -24,7 +24,7 @@ Atualmente, o projeto concluiu a estruturação da base de dados relacional e a 
 O sistema está sendo construído em fases incrementais. Os próximos passos transformarão o painel atual em uma API completa e escalável.
 
 * [x] **Fase 1: Base de Dados e Backoffice** (Atual)
-* [ ] **Fase 2: API RESTful (Django Rest Framework)**
+* [x] **Fase 2: API RESTful (Django Rest Framework)**
   * Criação de Serializers para conversão de dados em JSON.
   * Desenvolvimento de endpoints (GET, POST, PATCH, DELETE) para comunicação com aplicações front-end/mobile.
   * Autenticação e permissões de usuários (JWT/Token).
