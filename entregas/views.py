@@ -32,19 +32,9 @@ def motoristas_list(request):
         # ao inves de passar um obj como queryset ou uma instancia
         # é passado um data=data
         if(serializer.is_valid()): # verifica se os valores estao de acordo
-            validated_data = serializer.validated_data
-
-            # Com os dados validados, pode-se criar um obj "Motorista"
-            Motorista.objects.create(
-                nome = validated_data["nome"],
-                cpf = validated_data["cpf"],
-                cnh = validated_data["cnh"],
-                endereco = validated_data["endereco"],
-                telefone = validated_data["telefone"],
-                data_nascimento = validated_data["data_nascimento"],
-                ativo = validated_data["ativo"]
-            )
+            serializer.save() # Vai chamar o metodo create em serializers.py para criar uma nova instancia da classe
             return JsonResponse(serializer.data, status=201) # 201 = created
+        
         return JsonResponse(serializer.errors, status=400)
 
 @api_view(http_method_names=["GET", "PATCH", "DELETE"]) # PUT -> editar, PATCH -> editar parcial (mais util)
@@ -71,22 +61,10 @@ def motoristas_detail(request, id):
         serializer = MotoristaSerializers(instance=obj ,data=data, partial=True)
 
         if(serializer.is_valid()):
-            validated_data = serializer.validated_data
-            obj.nome = validated_data.get("nome", obj.nome) 
-            # tento substituir pelo novo valor, caso não tenha valor
-            # já seto o obj.nome (val original) como default
-
-            obj.cpf = validated_data.get("cpf", obj.cpf) 
-            obj.cnh = validated_data.get("cnh", obj.cnh) 
-            obj.telefone = validated_data.get("telefone", obj.telefone) 
-            obj.endereco = validated_data.get("endereco", obj.endereco) 
-            obj.ativo = validated_data.get("ativo", obj.ativo) 
-            obj.data_nascimento = validated_data.get("data_nascimento", obj.data_nascimento) 
-
-            #acima eu apenas substitui os valores do obj que esta em memoria, ainda preciso persistir no db
-            obj.save()
+            serializer.save()
             return JsonResponse(serializer.data, status=200) # 200, atualizando
         return JsonResponse(serializer.errors, status=400) # bad request
+    
     if (request.method == "DELETE"):
         obj = get_object_or_404(Motorista, id=id) # busca o objeto no banco
         try:
@@ -108,25 +86,10 @@ def caminhao_list(request):
         serializer = CaminhaoSerializers(data=data)
 
         if(serializer.is_valid()):
-            validated_data = serializer.validated_data
             nome_motorista = request.data.get("motorista")
-            #print(nome_motorista)
-            # .create() não aceita um campo many to many
-            # Retirar o nome do motorista do validated_data
-            validated_data.pop("motorista", None)
+            caminhao_criado = serializer.save(nome_motorista=nome_motorista) # Passando o parametro para o create
 
-            caminhao = Caminhao.objects.create(
-                placa = validated_data["placa"],
-                modelo = validated_data["modelo"]
-            )
-
-            if nome_motorista:
-                # Busca o motorista no banco de dados usando o nome
-                motorista_obj, created = Motorista.objects.get_or_create(nome=nome_motorista)
-                caminhao.motorista.set([motorista_obj])
-
-            serializer = CaminhaoSerializers(caminhao)
-            return JsonResponse(serializer.data, status=201)
+            return JsonResponse(CaminhaoSerializers(caminhao_criado).data, status=201)
         return JsonResponse(serializer.errors, status=400)
 
 @api_view(http_method_names=["GET", "PATCH", "DELETE"])
@@ -138,32 +101,14 @@ def caminhao_detail(request, id):
 
     if(request.method == "PATCH"):
         obj = get_object_or_404(Caminhao, id=id)
-
-        data = request.data # pega os dados da request PUT
-        
+        #data = request.data # pega os dados da request PUT
         # Validação
-        serializer = CaminhaoSerializers(instance=obj, data=data, partial=True)
+        serializer = CaminhaoSerializers(instance=obj, data=request.data, partial=True)
 
         if(serializer.is_valid()):
-            validated_data = serializer.validated_data
             motorista_nome = request.data.get("motorista")
-            # .create() não aceita um campo many to many
-            # Retirar o nome do motorista do validated_data
-            #validated_data.pop("motorista", None)
-
-            if motorista_nome:
-            # Substituir a entidade
-                motorista_obj, created = Motorista.objects.get_or_create(nome=motorista_nome)
-                obj.motorista.set([motorista_obj])
-            else: # O campo motorista não foi enviado no patch
-                pass
-
-            obj.placa = validated_data.get("placa", obj.placa)
-            obj.modelo = validated_data.get("modelo", obj.modelo)
-
-            obj.save()
-            obj_saved = CaminhaoSerializers(obj)
-            return JsonResponse(obj_saved.data, status=200) 
+            caminhao_atualizado = serializer.save(motorista_nome=motorista_nome)
+            return JsonResponse(CaminhaoSerializers(caminhao_atualizado).data, status=200) 
             # 200, atualizando, serializo novamente porque apaguei validated_data.pop("motorista", None)
         return JsonResponse(serializer.errors, status=400)
 
@@ -189,16 +134,7 @@ def pacote_list(request):
         serializer = PacoteSerializers(data=data)
 
         if(serializer.is_valid()):
-            validated_data = serializer.validated_data
-            Pacote.objects.create(
-                codigo_rastreio = validated_data["codigo_rastreio"],
-                cliente = validated_data["cliente"],
-                motorista = Motorista.objects.get(nome=(validated_data["motorista"])),
-                status = validated_data["status"],
-                destino = validated_data["destino"],
-                telefone = validated_data["telefone"]
-            )
-            #Motorista.objects.get() pegar o id a partir do nome do objeto
+            serializer.save()
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
 
@@ -220,25 +156,9 @@ def pacote_detail(request, codigo_rastreio):
         serializer = PacoteSerializers(instance=obj, data=data, partial=True) # serializando o objeto, dados que vieram da request
         # partial=True, permite updates parciais, para esta instancia de serializers
         if(serializer.is_valid()):
-            validated_data = serializer.validated_data
             motorista_nome = request.data.get("motorista")
-            if motorista_nome:
-                # Busca ou cria o motorista
-                motorista_obj, created = Motorista.objects.get_or_create(nome=motorista_nome)
-                obj.motorista.set([motorista_obj])  # Agora repassa a INSTÂNCIA, não a string!
-
-            else: # O campo motorista não foi enviado no patch
-                pass
-
-                # Substituindo campos simples
-            obj.codigo_rastreio = validated_data.get("codigo_rastreio", obj.codigo_rastreio)
-            obj.destino = validated_data.get("destino", obj.destino)
-            obj.cliente = validated_data.get("cliente", obj.cliente)
-            obj.status = validated_data.get("status", obj.status)
-            obj.telefone = validated_data.get("telefone", obj.telefone)
-            obj.save()
-            obj_saved = PacoteSerializers(obj)
-            return JsonResponse(obj_saved.data, status=200)
+            pacote_atualizado = serializer.save(motorista_nome=motorista_nome)
+            return JsonResponse(PacoteSerializers(pacote_atualizado).data, status=200)
         return JsonResponse(serializer.errors, status=400)
     if(request.method == "DELETE"):
         obj = get_object_or_404(Pacote, codigo_rastreio=codigo_rastreio)
