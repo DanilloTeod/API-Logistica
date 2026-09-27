@@ -1,14 +1,17 @@
 from rest_framework import serializers, fields
 from entregas.models import Motorista, Caminhao, Pacote
 
-class MotoristaSerializers(serializers.Serializer):
-    nome = serializers.CharField(max_length=150)
-    cpf = serializers.CharField(max_length=14)
-    cnh = serializers.CharField(max_length=20)
-    telefone = serializers.CharField(max_length=14)
-    endereco = serializers.CharField(max_length=100)
-    ativo = serializers.BooleanField()
-    data_nascimento = fields.DateField(input_formats=['%Y-%m-%d'])
+class MotoristaSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Motorista # Aponta para o medelo que estará sendo Serializado -> models.py
+        fields = ['id', 'nome', 'cpf', 'cnh', 'telefone', 'endereco', 'ativo', 'data_nascimento']
+    #nome = serializers.CharField(max_length=150)
+    #cpf = serializers.CharField(max_length=14)
+    #cnh = serializers.CharField(max_length=20)
+    #telefone = serializers.CharField(max_length=14)
+    #endereco = serializers.CharField(max_length=100)
+    #ativo = serializers.BooleanField()
+    #data_nascimento = fields.DateField(input_formats=['%Y-%m-%d'])
 
     def create(self, validated_data):
         # Com os dados validados, pode-se criar um instance "Motorista"
@@ -22,6 +25,12 @@ class MotoristaSerializers(serializers.Serializer):
             ativo = validated_data["ativo"]
         )
         return motorista
+
+    def validate(self, attrs): 
+        telefone = attrs.get("telefone", "") # Pega o campo telefone e caso não exista, pega valor vazio "" 
+        if not telefone.startswith("+55"): # Codigo não br
+            raise serializers.ValidationError("Telefone deve estar associado a um número Brasileiro") # VALIDATE FEITO APENAS PARA APRENDIZADO/TESTE
+        return attrs # Retorna os proprios dados
 
     def update(self, instance, validated_data): # Subistitui os dados que vieram da requisição (validated_data) pelos dados que ja estao no db (instace) 
         instance.nome = validated_data.get("nome", instance.nome) 
@@ -39,11 +48,15 @@ class MotoristaSerializers(serializers.Serializer):
         instance.save()
         return instance
     
-class CaminhaoSerializers(serializers.Serializer):
-    placa = serializers.CharField(max_length=8) 
+class CaminhaoSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Caminhao
+        fields = ['placa', 'modelo', 'motorista']
+
+    #placa = serializers.CharField(max_length=8) 
     # unique pois não podemos ter um mesmo caminhao com a mesma placa
     # verbose_name -> nome que aparece dentro do painel adm na parte de editar/ver placa do caminhao
-    modelo = serializers.CharField(max_length=100)
+    #modelo = serializers.CharField(max_length=100)
     motorista = serializers.SlugRelatedField(many=True, read_only=True, slug_field='nome')
 
     def create(self, validated_data): # Valor padrao para nome de motorista
@@ -79,13 +92,16 @@ class CaminhaoSerializers(serializers.Serializer):
         instance.save()
         return instance
     
-class PacoteSerializers(serializers.Serializer):
-    codigo_rastreio = serializers.CharField(max_length=50)
-    destino = serializers.CharField(max_length=150)
-    cliente = serializers.CharField(max_length=150)
+class PacoteSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Pacote
+        fields = ['codigo_rastreio', 'destino', 'cliente', 'motorista', 'status', 'telefone']
+    #codigo_rastreio = serializers.CharField(max_length=50)
+    #destino = serializers.CharField(max_length=150)
+    #cliente = serializers.CharField(max_length=150)
+    #status = serializers.CharField(max_length=15)
+    #telefone = serializers.CharField(max_length=14)
     motorista = serializers.CharField(max_length=150)
-    status = serializers.CharField(max_length=15)
-    telefone = serializers.CharField(max_length=14)
 
     def create(self, validated_data):
         pacote = Pacote.objects.create(
