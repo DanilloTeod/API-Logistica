@@ -26,11 +26,11 @@ class MotoristaSerializers(serializers.ModelSerializer):
         )
         return motorista
 
-    def validate(self, attrs): 
-        telefone = attrs.get("telefone", "") # Pega o campo telefone e caso não exista, pega valor vazio "" 
-        if not telefone.startswith("+55"): # Codigo não br
-            raise serializers.ValidationError("Telefone deve estar associado a um número Brasileiro") # VALIDATE FEITO APENAS PARA APRENDIZADO/TESTE
-        return attrs # Retorna os proprios dados
+    #def validate(self, attrs): 
+    #    telefone = attrs.get("telefone", "") # Pega o campo telefone e caso não exista, pega valor vazio "" 
+    #    if not telefone.startswith("+55"): # Codigo não br
+    #        raise serializers.ValidationError("Telefone deve estar associado a um número Brasileiro") # VALIDATE FEITO APENAS PARA APRENDIZADO/TESTE
+    #    return attrs # Retorna os proprios dados
 
     def update(self, instance, validated_data): # Subistitui os dados que vieram da requisição (validated_data) pelos dados que ja estao no db (instace) 
         instance.nome = validated_data.get("nome", instance.nome) 

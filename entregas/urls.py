@@ -1,12 +1,16 @@
 from django.urls import path
-from entregas.views import motoristas_list, motoristas_detail, caminhao_detail, caminhao_list, pacote_list, pacote_detail
+#from entregas.views import motorista_list, motoristas_detail, caminhao_list, caminhao_detail, pacote_list, pacote_detail
+from entregas.views import MotoristaList, MotoristaDetail, CaminhaoList, CaminhaoDetail, PacoteList, PacoteDetail
+
+
+#   MotoristaList.as_view() chama a classe view como uma funcao
 
 urlpatterns = [
-    path('motoristas/', motoristas_list), # path, view que é chamada
-    path('motoristas/<int:id>/', motoristas_detail),
-    path('caminhoes/', caminhao_list),
-    path('caminhoes/<int:id>/', caminhao_detail),
-    path('encomendas/', pacote_list),
-    path('encomendas/<str:codigo_rastreio>/', pacote_detail)
+    path('motoristas/', MotoristaList.as_view()), # path, view que é chamada
+    path('motoristas/<int:id>/', MotoristaDetail.as_view()),
+    path('caminhoes/', CaminhaoList.as_view()),
+    path('caminhoes/<int:id>/', CaminhaoDetail.as_view()),
+    path('encomendas/', PacoteList.as_view()),
+    path('encomendas/<str:codigo_rastreio>/', PacoteDetail.as_view())
 ]
 
