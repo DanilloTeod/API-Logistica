@@ -7,10 +7,10 @@ from entregas.views import MotoristaList, MotoristaDetail, CaminhaoList, Caminha
 
 urlpatterns = [
     path('motoristas/', MotoristaList.as_view()), # path, view que é chamada
-    path('motoristas/<int:id>/', MotoristaDetail.as_view()),
+    path('motoristas/<int:pk>/', MotoristaDetail.as_view()),
     path('caminhoes/', CaminhaoList.as_view()),
-    path('caminhoes/<int:id>/', CaminhaoDetail.as_view()),
+    path('caminhoes/<int:pk>/', CaminhaoDetail.as_view()),
     path('encomendas/', PacoteList.as_view()),
-    path('encomendas/<str:codigo_rastreio>/', PacoteDetail.as_view())
+    path('encomendas/<str:codigo_rastreio>/', PacoteDetail.as_view(), name='pacote-detail'),
 ]
 
