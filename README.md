@@ -28,7 +28,7 @@ O sistema está sendo construído em fases incrementais. Os próximos passos tra
   * Criação de Serializers para conversão de dados em JSON.
   * Desenvolvimento de endpoints (GET, POST, PATCH, DELETE) para comunicação com aplicações front-end/mobile.
   * Autenticação e permissões de usuários (JWT/Token).
-* [ ] **Fase 3: Consultas Avançadas em SQL**
+* [x] **Fase 3: Consultas Avançadas em SQL**
   * Criação de rotas gerenciais baseadas em instruções SQL brutas (PostgreSQL) para relatórios complexos de performance de motoristas e frotas.
 * [ ] **Fase 4: Tarefas Assíncronas (Celery + Redis)**
   * Implementação de filas de processamento.
