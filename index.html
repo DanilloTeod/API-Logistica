@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Teste da API Django</title>
+</head>
+<body style="font-family: Arial; margin: 40px;">
+    <h2>1. Fazer Login</h2>
+    <input type="text" id="username" placeholder="Usuário" value="usertest"><br><br>
+    <input type="password" id="password" placeholder="Senha" value="usertest"><br><br>
+    <button onclick="fazerLogin()">Entrar e Pegar Token</button>
+    <p id="status-login" style="color: green;"></p>
+
+    <hr style="margin: 30px 0;">
+
+    <h2>2. Buscar Motoristas (Rota Protegida)</h2>
+    <button onclick="buscarMotoristas()">Listar Motoristas</button>
+    <pre id="resultado" style="background: #f4f4f4; padding: 15px; border-radius: 5px;"></pre>
+
+    <script>
+        // Função 1: Envia usuário e senha para pegar o token e salva no navegador
+        async function fazerLogin() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/token/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Guarda o token no localStorage do navegador (como a "pulseirinha")
+                    localStorage.setItem('access_token', data.access);
+                    document.getElementById('status-login').innerText = "Login realizado com sucesso! Token salvo.";
+                } else {
+                    document.getElementById('status-login').style.color = "red";
+                    document.getElementById('status-login').innerText = "Erro no login: " + JSON.stringify(data);
+                }
+            } catch (error) {
+                console.error("Erro:", error);
+            }
+        }
+
+        // Função 2: Faz um GET enviando o token salvo no Header Authorization
+        async function buscarMotoristas() {
+            const token = localStorage.getItem('access_token');
+
+            if (!token) {
+                alert("Você precisa fazer login primeiro para pegar o token!");
+                return;
+            }
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/motoristas/', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}` // Aqui vai a pulseirinha!
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('resultado').innerText = JSON.stringify(data, null, 2);
+                } else {
+                    document.getElementById('resultado').innerText = "Erro ao buscar: " + JSON.stringify(data);
+                }
+            } catch (error) {
+                console.error("Erro:", error);
+            }
+        }
+    </script>
+</body>
+</html>

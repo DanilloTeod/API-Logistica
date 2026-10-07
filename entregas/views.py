@@ -10,6 +10,8 @@ from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework import mixins, generics
 
+from rest_framework.permissions import IsAuthenticated # token
+
 class MotoristaList(
     mixins.ListModelMixin, # Adicionar o mixin de listage e criacao
     mixins.CreateModelMixin,
@@ -18,7 +20,8 @@ class MotoristaList(
 
     queryset = Motorista.objects.all()
     serializer_class = MotoristaSerializers
-
+    permission_classes = [IsAuthenticated]
+    
     def get(self, request, *args, **kwargs):
         #self.list(request, *args, **kwargs) # Argumentos nao nomeados e argumentos nomeados
         #queryset = Motorista.objects.all() # QuerySet, consulta
@@ -88,6 +91,7 @@ class MotoristaDetail(mixins.RetrieveModelMixin,
                       mixins.DestroyModelMixin,
                       generics.GenericAPIView,
 ):
+    permission_classes = [IsAuthenticated]
     queryset = Motorista.objects.all()
     serializer_class = MotoristaSerializers
 
@@ -168,6 +172,7 @@ class CaminhaoList(mixins.ListModelMixin,
     
     queryset = Caminhao.objects.all()
     serializer_class = CaminhaoSerializers
+    permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
         nome_motorista = self.request.data.get("motorista")
@@ -208,6 +213,7 @@ class CaminhaoDetail(mixins.RetrieveModelMixin,
 ):
     queryset = Caminhao.objects.all()
     serializer_class = CaminhaoSerializers
+    permission_classes = [IsAuthenticated]
 
     def perform_update(self, serializer):
         motorista_nome = self.request.data.get("motorista")
@@ -260,7 +266,8 @@ class PacoteList(
 ): # Class based views
     queryset = Pacote.objects.all()
     serializer_class = PacoteSerializers
-    
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
@@ -296,6 +303,8 @@ class PacoteDetail(mixins.RetrieveModelMixin,
     serializer_class = PacoteSerializers
     lookup_field = 'codigo_rastreio' # Indico ao DRF qual campo utilizado
                                     # para busca
+    permission_classes = [IsAuthenticated]
+    
     def perform_update(self, serializer):
         motorista_nome = self.request.data.get("motorista")
         serializer.save(motorista_nome=motorista_nome)
